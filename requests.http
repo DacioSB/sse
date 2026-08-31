@@ -1,5 +1,10 @@
 # POST http://localhost:8080/tasks/start HTTP/1.1
 
-
-
 POST http://localhost:8080/jobs/process HTTP/1.1
+
+###
+
+POST http://localhost:8080/events/stream HTTP/1.1
+###
+
+POST http://localhost:8080/servlet-events/stream HTTP/1.1
