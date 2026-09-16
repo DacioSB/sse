@@ -3,6 +3,7 @@ package com.example.sse.Resources;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -25,11 +26,12 @@ public class SsePostResource {
         @Suspended final AsyncResponse asyncResponse
     ){
         StreamingOutput output = outpuStream -> {
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(outpuStream))) {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(outpuStream, StandardCharsets.UTF_8))) {
                 for (int i = 0; i < 10; i++) {
                     writer.write("id: " + i + "\n");
                     writer.write("event: data-update\n");
                     writer.write("data: {\"index\": " + i + "}\n\n");
+                    writer.write(": ping\n\n"); // SSE comment = heartbeat
                     writer.flush();
                     Thread.sleep(1000);
                 }
@@ -41,7 +43,6 @@ public class SsePostResource {
         Response response = Response.ok()
             .type(MediaType.SERVER_SENT_EVENTS_TYPE)
             .header("Cache-Control", "no-cache, no-transform")
-            .header("Connection", "keep-alive")
             .entity(output)
             .build();
         asyncResponse.resume(response);

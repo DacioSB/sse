@@ -12,7 +12,10 @@ public class SsePostConsumer {
         String targetUrl = "http://localhost:8080/events/stream";
         String body = "{\"query\": \"search-term\"}";
 
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        HttpClient client = HttpClient.newBuilder()
+        .version(HttpClient.Version.HTTP_1_1)
+        .connectTimeout(Duration.ofSeconds(10))
+        .build();
 
         HttpRequest request = HttpRequest
             .newBuilder()
