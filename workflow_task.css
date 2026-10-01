@@ -47,3 +47,50 @@ body {
 }
 .badge.idle { background: #e5e7eb; color: #4b5563; }
 
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+button {
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+.status-meta {
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.heartbeat-indicator {
+    display: flex;
+    font-size: 12px;
+    align-items: center;
+    color: var(--text-muted);
+    gap: 6px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #9ca3af;
+}

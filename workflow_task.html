@@ -16,6 +16,17 @@
                 </div>
                 <span id="statusBadge" class="badge idle">Idle</span>
             </div>
+            <div class="controls">
+                <input type="text" id="ticketId" value="INC-009842" placeholder="Ticket ID (e.g. INC-001)">
+                <button type="runBtn" onclick="startWorkflow()">Run Workflow</button>
+            </div>
+            <div class="status-meta">
+                <span id="currentStatusText">Waiting to trigger...</span>
+                <div class="heartbeat-indicator">
+                    <span class="dot" id="heartbeatDot"></span>
+                    <span id="heartbeatText">Socket: Disconnected</span>
+                </div>
+            </div>
         </main>
     </body>
 </html>
