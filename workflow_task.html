@@ -27,6 +27,55 @@
                     <span id="heartbeatText">Socket: Disconnected</span>
                 </div>
             </div>
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div class="timeline" id="timeline">
+                <!-- Log items will appear here dynamically -->
+            </div>
         </main>
+        <script>
+            async function startWorkflow() {
+                const ticketInput = document.getElementById("ticketId");
+                const runBtn = document.getElementById("runBtn");
+                const statusBadge = document.getElementById("statusBadge");
+                const progressBar = document.getElementById("progressBar");
+                const currentStatusText = document.getElementById("currentStatusText");
+                const heartbeatDot = document.getElementById("heartbeatDot");
+                const heartbeatText = document.getElementById("heartbeatText");
+                const timeline = document.getElementById("timeline");
+
+                //reset 
+                timeline.innerHTML = "";
+                progressBar.style.width = "0%";
+                statusBadge.className = "badge in_progress";
+                statusBadge.innerText = "In Progress";
+                heartbeatDot.className = "dot pulse";
+                heartbeatText.innerText = "Socket: Active";
+
+                addLogEntry("Client initiated POST request...");
+
+                try {
+                    const response = await fetch("http://localhost:8080/workflows/track", {
+                        method: "POST",
+                        headers : {
+                            "Content-Type": "application/json",
+                            "Accept": "text/event-stream"
+                        },
+                        body: JSON.stringify({ticketId: ticketInput.value})
+                    });
+                } catch (error) {
+                    
+                }
+            }
+            function addLogEntry(message) {
+                const timeline = document.getElementById("timeline");
+                const now = new Date().toLocaleTimeString();
+                const entry = document.createElement("div");
+                entry.className = "log-entry";
+                entry.innerHTML = `<span class="log-time">[${now}]</span><span class="log-msg">${message}</span>`;
+                timeline.prepend(entry);
+            }
+        </script>
     </body>
 </html>
