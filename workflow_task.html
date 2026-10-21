@@ -64,6 +64,23 @@
                         },
                         body: JSON.stringify({ticketId: ticketInput.value})
                     });
+                    if(!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status}`)
+                    }
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let buffer = "";
+                    while (true) {
+                        //read, if done break, decode and get the events from the buffer
+                        const {value, done} = await reader.read(); 
+                        if (done) {
+                            break;
+                        }
+                        buffer += decoder.decode(value, {stream: true});
+                        const events = buffer.split("\n\n");
+
+                        buffer = events.pop();
+                    }
                 } catch (error) {
                     
                 }
