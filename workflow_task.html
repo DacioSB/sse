@@ -18,7 +18,7 @@
             </div>
             <div class="controls">
                 <input type="text" id="ticketId" value="INC-009842" placeholder="Ticket ID (e.g. INC-001)">
-                <button type="runBtn" onclick="startWorkflow()">Run Workflow</button>
+                <button id="runBtn" onclick="startWorkflow()">Run Workflow</button>
             </div>
             <div class="status-meta">
                 <span id="currentStatusText">Waiting to trigger...</span>
@@ -80,9 +80,35 @@
                         const events = buffer.split("\n\n");
 
                         buffer = events.pop();
+                        for (const rawEvent of events) {
+                            const lines = rawEvent.split("\n");
+                            for (const line of lines) {
+                                const trimmedLine = line.trim();
+                                if (trimmedLine.startsWith(":")) {
+                                    triggerHeartbeatPulse();
+                                    continue;
+                                }
+                                if (trimmedLine.startsWith("data:")) {
+                                    const payload = JSON.parse(trimmedLine.substring(5).trim());
+                                    progressBar.style.width = `${payload.percentage}`;
+                                    currentStatusText.innerHTML = `${payload.percentage-payload.message}`;
+                                    addLogEntry(payload.message);
+                                    if (payload.status === "COMPLETED") {
+                                        statusBadge.className = "badge completed";
+                                        statusBadge.innerHTML = "Resolved";
+                                    }
+                                }
+                            }
+                        }
                     }
                 } catch (error) {
-                    
+                    addLogEntry(`Error: ${error.message}`);
+                    statusBadge.className = "badge idle";
+                    statusBadge.innerText = "Failed";
+                } finally {
+                    runBtn.disabled = false;
+                    heartbeatDot.className = "dot";
+                    heartbeatText.innerHTML = "Socket: Closed";
                 }
             }
             function addLogEntry(message) {
@@ -92,6 +118,13 @@
                 entry.className = "log-entry";
                 entry.innerHTML = `<span class="log-time">[${now}]</span><span class="log-msg">${message}</span>`;
                 timeline.prepend(entry);
+            }
+            function triggerHeartbeatPulse() {
+                const dot = document.getElementById("heartbeatDot");
+                dot.style.transform = "scale(1.5)";
+                setTimeout(() => {
+                    dot.style.transform = "scale(1)"
+                }, 300);
             }
         </script>
     </body>

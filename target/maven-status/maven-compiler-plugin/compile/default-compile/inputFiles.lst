@@ -1,5 +1,7 @@
+/home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Consumers/SsePostConsumer.java
+/home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Resources/HeartbeatSseResource.java
 /home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Resources/JobResource.java
 /home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/App.java
-/home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Resources/SseServletResource.java
+/home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/CorsFilter.java
 /home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Resources/TaskResource.java
 /home/docitu/Documents/java/sse/sse/src/main/java/com/example/sse/Resources/SsePostResource.java

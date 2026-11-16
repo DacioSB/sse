@@ -12,6 +12,7 @@ public class App {
 
         ResourceConfig config = new ResourceConfig();
         config.packages("com.example.sse.Resources");
+        config.register(CorsFilter.class);
 
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
 
