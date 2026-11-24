@@ -44,13 +44,6 @@ public class HeartbeatSseResource {
             }
         }).start();
 
-        // Why ChunkedOutput and not StreamingOutput:
-        // Jersey's CommittingOutputStream does not commit on flush() (see
-        // jersey-common 3.1.5), so a StreamingOutput whose total output fits in
-        // the default 8192-byte buffer is held until close() and then sent as a
-        // single packet with a computed Content-Length. ChunkedOutput.flush
-        // happens on every write(), so each event reaches the socket as it is
-        // produced.
         final ChunkedOutput<String> eventStream = new ChunkedOutput<>(String.class);
 
         new Thread(() -> {
@@ -72,15 +65,12 @@ public class HeartbeatSseResource {
                         active = false;
                     }
                 } catch (IOException | InterruptedException e) {
-                    // IOException: client disconnected - stop pumping events.
-                    // InterruptedException: server shutting down.
                     break;
                 }
             }
             try {
                 eventStream.close();
             } catch (IOException ignored) {
-                // already closed by the client disconnect that broke the loop
             }
         }).start();
 
