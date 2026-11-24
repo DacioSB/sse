@@ -1,9 +1,6 @@
 package com.example.sse.Resources;
 
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -14,14 +11,15 @@ import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
+
+import org.glassfish.jersey.server.ChunkedOutput;
 
 @Path("workflows")
 public class HeartbeatSseResource {
 
     record WorkflowStep(int percentage, String status, String message, boolean isTerminal) {}
-  
-    @POST 
+
+    @POST
     @Path("track")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void streamWithHeartbeat(
@@ -46,38 +44,51 @@ public class HeartbeatSseResource {
             }
         }).start();
 
-        //
-        StreamingOutput stream = (outputStream) -> {
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
-                boolean active = true;
-                while (active) {
-                    
+        // Why ChunkedOutput and not StreamingOutput:
+        // Jersey's CommittingOutputStream does not commit on flush() (see
+        // jersey-common 3.1.5), so a StreamingOutput whose total output fits in
+        // the default 8192-byte buffer is held until close() and then sent as a
+        // single packet with a computed Content-Length. ChunkedOutput.flush
+        // happens on every write(), so each event reaches the socket as it is
+        // produced.
+        final ChunkedOutput<String> eventStream = new ChunkedOutput<>(String.class);
+
+        new Thread(() -> {
+            boolean active = true;
+            while (active) {
+                try {
                     WorkflowStep step = queue.poll(2, TimeUnit.SECONDS);
                     if (step == null) {
-                        writer.write(": keep-alive\n\n");
-                        writer.flush();
-                        continue;                        
+                        eventStream.write(": keep-alive\n\n");
+                        continue;
                     }
                     String jsonPayload = String.format(
                             "{\"percentage\": %d, \"status\": \"%s\", \"message\": \"%s\"}",
                             step.percentage(), step.status(), step.message()
                     );
-                    writer.write("event: workflow-update\\n");
-                    writer.write("data: " + jsonPayload + "\n\n");
-                    writer.flush();
-                    if (step.isTerminal) {
+                    eventStream.write("event: workflow-update\n");
+                    eventStream.write("data: " + jsonPayload + "\n\n");
+                    if (step.isTerminal()) {
                         active = false;
                     }
+                } catch (IOException | InterruptedException e) {
+                    // IOException: client disconnected - stop pumping events.
+                    // InterruptedException: server shutting down.
+                    break;
                 }
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
             }
-        };
+            try {
+                eventStream.close();
+            } catch (IOException ignored) {
+                // already closed by the client disconnect that broke the loop
+            }
+        }).start();
+
         asyncResponse.resume(
-                Response.ok(stream)
+                Response.ok(eventStream)
                         .header("Cache-Control", "no-cache, no-transform")
                         .header("Connection", "keep-alive")
-                        .header("X-Accel-Buffering", "no") 
+                        .header("X-Accel-Buffering", "no")
                         .build());
     }
 }

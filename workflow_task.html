@@ -90,8 +90,8 @@
                                 }
                                 if (trimmedLine.startsWith("data:")) {
                                     const payload = JSON.parse(trimmedLine.substring(5).trim());
-                                    progressBar.style.width = `${payload.percentage}`;
-                                    currentStatusText.innerHTML = `${payload.percentage-payload.message}`;
+                                    progressBar.style.width = `${payload.percentage}%`;
+                                    currentStatusText.innerHTML = `${payload.percentage}% - ${payload.message}`;
                                     addLogEntry(payload.message);
                                     if (payload.status === "COMPLETED") {
                                         statusBadge.className = "badge completed";

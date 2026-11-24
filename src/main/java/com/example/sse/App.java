@@ -8,7 +8,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        final URI baseUri = URI.create("http://localhost:8080/");
+        final URI baseUri = URI.create(args.length > 0 ? args[0] : "http://localhost:8080/");
 
         ResourceConfig config = new ResourceConfig();
         config.packages("com.example.sse.Resources");
